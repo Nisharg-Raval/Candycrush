@@ -11,26 +11,44 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Check out the code
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
         with:
-          fetch-depth: 0 
+          fetch-depth: 0 # Disable shallow clones for better analysis
 
-      - name: Debug Network Connection
-        run: |
-          curl -I https://www.google.com
-          curl -I $SONAR_HOST_URL
-
+      # Step 2: Run SonarQube scan
       - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@v2
+        uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           SONAR_SCANNER_OPTS: "-Dsonar.ws.timeout=60"
 
+      # Optional: Fail job if the Quality Gate fails (uncomment if needed)
+      # - name: Check SonarQube Quality Gate
+      #   uses: sonarsource/sonarqube-quality-gate-action@master
+      #   timeout-minutes: 5
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      # Step 3: Install NPM dependencies
       - name: NPM Install
         run: npm install
 
+      # Step 4: Install and run Trivy for scanning
       - name: Install Trivy
         run: |
+          # Scanning files
           trivy fs . > trivyfs.txt
+
+  deploy:
+    needs: build # Corrected dependency
+    runs-on: self-hosted # Use your self-hosted runner label here
+    steps:
+      - name: Pull the Docker image
+        run: docker pull sevenajay/candycrush:latest
+      - name: Trivy image scan
+        run: trivy image sevenajay/candycrush:latest # Add Trivy scan command here
+      - name: Run the container
+        run: docker run -d --name ticgame -p 3000:3000 sevenajay/candycrush:latest
