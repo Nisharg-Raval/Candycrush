@@ -38,9 +38,10 @@ jobs:
       # Step 4: Install and run Trivy for scanning
       - name: Install Trivy
         run: |
-           # Scanning files
-           trivy fs . &gt; trivyfs.txt
-deploy:
+          # Scanning files
+          trivy fs . > trivyfs.txt
+
+  deploy:
     needs: build-analyze-scan
     runs-on: self-hosted # Use your self-hosted runner label here
     steps:
