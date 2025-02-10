@@ -1,3 +1,4 @@
+
 name: Build
 
 on:
@@ -42,7 +43,7 @@ jobs:
           trivy fs . > trivyfs.txt
 
   deploy:
-    needs: build
+    needs: build # Corrected dependency
     runs-on: self-hosted # Use your self-hosted runner label here
     steps:
       - name: Pull the Docker image
@@ -51,4 +52,3 @@ jobs:
         run: trivy image sevenajay/candycrush:latest # Add Trivy scan command here
       - name: Run the container
         run: docker run -d --name ticgame -p 3000:3000 sevenajay/candycrush:latest
-
