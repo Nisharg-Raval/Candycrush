@@ -5,28 +5,41 @@ on:
     branches:
       - main
 
-
 jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v2
+      # Step 1: Check out the code
+      - name: Checkout Code
+        uses: actions/checkout@v2
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - uses: sonarsource/sonarqube-scan-action@master
+          fetch-depth: 0 # Disable shallow clones for better analysis
+
+      # Step 2: Run SonarQube scan
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-      # If you wish to fail your job when the Quality Gate is red, uncomment the
-      # following lines. This would typically be used to fail a deployment.
-      # - uses: sonarsource/sonarqube-quality-gate-action@master
+
+      # Optional: Fail job if the Quality Gate fails (uncomment if needed)
+      # - name: Check SonarQube Quality Gate
+      #   uses: sonarsource/sonarqube-quality-gate-action@master
       #   timeout-minutes: 5
       #   env:
       #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-    - name: NPM Install
-      run: npm install # Add your specific npm install command
-    - name: Install Trivy
-      run: |
-     # Scanning files
-     trivy fs . &gt; trivyfs.txt
+
+      # Step 3: Install NPM dependencies
+      - name: NPM Install
+        run: npm install
+
+      # Step 4: Install and run Trivy for scanning
+      - name: Install and Run Trivy
+        run: |
+          # Install Trivy
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+
+          # Run Trivy file system scan and save results
+          ./trivy fs . > trivyfs.txt
