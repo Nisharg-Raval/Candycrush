@@ -10,27 +10,34 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v2
         with:
           fetch-depth: 0  # Ensures full history for better analysis
-      - uses: sonarsource/sonarqube-scan-action@master
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-      - name: NPM Install
+
+      - name: Install Dependencies
         run: npm install # Add your specific npm install command
-      - name: Run Trivy Scan
+
+      - name: Run Trivy Security Scan
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
           scan-ref: '.'
           format: 'table'
           output: 'trivyfs.txt'
+
       - name: Upload Trivy Scan Results
-        uses: actions/upload-artifact@v4  # Updated from v2 to v4
+        uses: actions/upload-artifact@v4
         with:
           name: Trivy-Scan-Results
           path: trivyfs.txt
+
       - name: Docker Build and Push
         run: |
           docker build --progress=plain -t candycrush .
@@ -40,3 +47,16 @@ jobs:
         env:
           DOCKER_CLI_ACI: 1
 
+  deploy:
+    needs: build  # Ensure this refers to the correct existing job
+    runs-on: self-hosted # Use your self-hosted runner label here
+
+    steps:
+      - name: Pull the Docker image
+        run: docker pull nisharg559/candycrush:latest
+
+      - name: Trivy Image Scan
+        run: trivy image nisharg559/candycrush:latest  # Security scan on the built image
+
+      - name: Run the Container
+        run: docker run -d --name ticgame -p 3000:3000 nisharg559/candycrush:latest
