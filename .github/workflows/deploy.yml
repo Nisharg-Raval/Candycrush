@@ -31,11 +31,12 @@ jobs:
         with:
           name: Trivy-Scan-Results
           path: trivyfs.txt
-      - name: Docker build and push
+      - name: Docker Build and Push
         run: |
-          docker build -t candycrush .
+          docker build --progress=plain -t candycrush .
           docker tag candycrush sevenajay/candycrush:latest
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
           docker push sevenajay/candycrush:latest
         env:
           DOCKER_CLI_ACI: 1
+
