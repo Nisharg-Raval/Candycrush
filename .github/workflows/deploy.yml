@@ -28,5 +28,11 @@ jobs:
         run: npm install # Add your specific npm install command
       - name: Install Trivy
         run: |
-               trivy fs . &gt; trivyfs.txt
+            sudo apt update
+            sudo apt install -y wget
+            wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_Linux-64bit.tar.gz
+            tar -xvzf trivy_Linux-64bit.tar.gz
+            sudo mv trivy /usr/local/bin/
+      - name: Run Trivy Scan
+        run: trivy fs . > trivyfs.txt
 
