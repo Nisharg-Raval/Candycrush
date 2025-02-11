@@ -34,9 +34,9 @@ jobs:
       - name: Docker Build and Push
         run: |
           docker build --progress=plain -t candycrush .
-          docker tag candycrush sevenajay/candycrush:latest
+          docker tag candycrush nisharg559/candycrush:latest
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-          docker push sevenajay/candycrush:latest
+          docker push nisharg559/candycrush:latest
         env:
           DOCKER_CLI_ACI: 1
 
