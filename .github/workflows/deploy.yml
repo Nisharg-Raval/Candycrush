@@ -27,7 +27,7 @@ jobs:
           format: 'table'
           output: 'trivyfs.txt'
       - name: Upload Trivy Scan Results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4  # Updated from v2 to v4
         with:
           name: Trivy-Scan-Results
           path: trivyfs.txt
